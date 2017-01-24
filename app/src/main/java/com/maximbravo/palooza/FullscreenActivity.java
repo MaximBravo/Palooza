@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -78,6 +79,7 @@ public class FullscreenActivity extends AppCompatActivity
     // This is the current match we're in; null if not loaded
     public TurnBasedMatch mMatch;
 
+    public Game mTurnData;
     // This is the current match data after being unpersisted.
     // Do not retain references to match data once you have
     // taken an action on the match, such as takeTurn()
@@ -156,11 +158,12 @@ public class FullscreenActivity extends AppCompatActivity
         findViewById(R.id.sign_out_button).setOnClickListener(this);
         findViewById(R.id.sign_in_button).setOnClickListener(this);
 
+        mDataView = (TextView) findViewById(R.id.game);
+        mContentView = findViewById(R.id.content);
         //\\mDataView = ((TextView) findViewById(R.id.data_view));
         //\\mTurnTextView = ((TextView) findViewById(R.id.turn_counter_view));
         mVisible = true;
-        mControlsView = findViewById(R.id.fullscreen_content_controls);
-        mContentView = findViewById(R.id.fullscreen_content);
+
 
 
         // Set up the user interaction to manually show or hide the system UI.
@@ -174,13 +177,7 @@ public class FullscreenActivity extends AppCompatActivity
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                hide();
-                return true;
-            }
-        });
+
     }
     private void hide() {
 
@@ -189,7 +186,6 @@ public class FullscreenActivity extends AppCompatActivity
         if (actionBar != null) {
             actionBar.hide();
         }
-        mControlsView.setVisibility(View.GONE);
         mVisible = false;
 
         // Schedule a runnable to remove the status and navigation bar after a delay
@@ -470,15 +466,25 @@ public class FullscreenActivity extends AppCompatActivity
     }\*/
     // Upload your new gamestate, then take a turn, and pass it on to the next
     // player.
-    /*\public void onDoneClicked(View view) {
-        showSpinner();
+    public void onDoneClicked(View view) {
 
+        EditText inputfield = (EditText) findViewById(R.id.input);
+        String message = inputfield.getText().toString();
         String nextParticipantId = getNextParticipantId();
+        String name = mMatch.getParticipant(nextParticipantId).getDisplayName();
         // Create the next turn
         mTurnData.turnCounter += 1;
-        mTurnData.data = boardState;
+        mTurnData.data += "\t\t" + name + " says: \n\t\t" + message + "\n";
 
-        showSpinner();
+        mContentView.setBackgroundColor(Color.BLUE);
+        findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
+        findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+        findViewById(R.id.startMatchButton).setVisibility(View.VISIBLE);
+        findViewById(R.id.checkGamesButton).setVisibility(View.VISIBLE);
+
+        findViewById(R.id.input).setVisibility(View.GONE);
+        findViewById(R.id.game).setVisibility(View.GONE);
+        findViewById(R.id.doneButton).setVisibility(View.GONE);
 
         Games.TurnBasedMultiplayer.takeTurn(mGoogleApiClient, mMatch.getMatchId(),
                 mTurnData.persist(), nextParticipantId).setResultCallback(
@@ -490,7 +496,7 @@ public class FullscreenActivity extends AppCompatActivity
                 });
 
         mTurnData = null;
-    }\*/
+    }
 
     // Sign-in, Sign out behavior
 
@@ -525,19 +531,20 @@ public class FullscreenActivity extends AppCompatActivity
     }
 
     // Switch to gameplay view.
-    /*\public void setGameplayUI() {
+    public void setGameplayUI() {
         isDoingTurn = true;
-        setViewVisibility();
+        //setViewVisibility();
+        mContentView.setBackgroundColor(Color.WHITE);
+        findViewById(R.id.sign_in_button).setVisibility(View.GONE);
+        findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+        findViewById(R.id.startMatchButton).setVisibility(View.GONE);
+        findViewById(R.id.checkGamesButton).setVisibility(View.GONE);
+        findViewById(R.id.game).setVisibility(View.VISIBLE);
+        findViewById(R.id.input).setVisibility(View.VISIBLE);
+        findViewById(R.id.doneButton).setVisibility(View.VISIBLE);
+
         mDataView.setText(mTurnData.data);
-        for(int i = 1; i <= mTurnData.data.length(); i++){
-            if(mTurnData.data.charAt(i-1) == '1'){
-                convertToColor(i, Color.RED);
-            } else if(mTurnData.data.charAt(i-1) == '2'){
-                convertToColor(i, Color.BLUE);
-            }
-        }
-        mTurnTextView.setText("Turn " + mTurnData.turnCounter);
-    }\*/
+    }
 
     /*\public void convertToColor(int id, int color){
         View v;
@@ -822,12 +829,11 @@ public class FullscreenActivity extends AppCompatActivity
                 showWarning("Complete!",
                         "This game is over; someone finished it!  You can only finish it now.");
         }
-
         // OK, it's active. Check on turn status.
         switch (turnStatus) {
             case TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN:
-                //\\mTurnData = SkeletonTurn.unpersist(mMatch.getData());
-                //\\setGameplayUI();
+                mTurnData = Game.unpersist(mMatch.getData());
+                setGameplayUI();
                 return;
             case TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN:
                 // Should return results.
