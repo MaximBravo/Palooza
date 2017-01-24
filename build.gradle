@@ -16,6 +16,9 @@ allprojects {
     repositories {
         jcenter()
     }
+    ext {
+        gms_library_version = '10.0.1'
+    }
 }
 
 task clean(type: Delete) {
