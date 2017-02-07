@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.support.v7.app.ActionBar;
@@ -46,6 +47,8 @@ public class FullscreenActivity extends AppCompatActivity
         View.OnClickListener {
 
     public static final String TAG = "FullscreenActivity";
+    private static final int MAIN_LAYOUT = 200;
+    private static final int GAMEPLAY_LAYOUT = 100;
 
     // Client used to interact with Google APIs
     private GoogleApiClient mGoogleApiClient;
@@ -68,6 +71,7 @@ public class FullscreenActivity extends AppCompatActivity
 
     private AlertDialog mAlertDialog;
 
+    private TemporaryGame temporaryGame;
     // For our intents
     private static final int RC_SIGN_IN = 9001;
     final static int RC_SELECT_PLAYERS = 10000;
@@ -144,8 +148,13 @@ public class FullscreenActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        //hide();
         setContentView(R.layout.activity_fullscreen);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
 
         // Create the Google API Client with access to Plus and Games
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -160,23 +169,8 @@ public class FullscreenActivity extends AppCompatActivity
 
         mDataView = (TextView) findViewById(R.id.game);
         mContentView = findViewById(R.id.content);
-        //\\mDataView = ((TextView) findViewById(R.id.data_view));
-        //\\mTurnTextView = ((TextView) findViewById(R.id.turn_counter_view));
         mVisible = true;
-
-
-
-        // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                hide();
-            }
-        });
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
+        temporaryGame = new TemporaryGame();
 
     }
     private void hide() {
@@ -467,24 +461,18 @@ public class FullscreenActivity extends AppCompatActivity
     // Upload your new gamestate, then take a turn, and pass it on to the next
     // player.
     public void onDoneClicked(View view) {
+       done( temporaryGame.getMessage());
+    }
 
-        EditText inputfield = (EditText) findViewById(R.id.input);
-        String message = inputfield.getText().toString();
+    public void done(String message){
         String nextParticipantId = getNextParticipantId();
         String name = mMatch.getParticipant(nextParticipantId).getDisplayName();
         // Create the next turn
         mTurnData.turnCounter += 1;
-        mTurnData.data += "\t\t" + name + " says: \n\t\t" + message + "\n";
+        mTurnData.data = message;
 
-        mContentView.setBackgroundColor(Color.BLUE);
-        findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-        findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
-        findViewById(R.id.startMatchButton).setVisibility(View.VISIBLE);
-        findViewById(R.id.checkGamesButton).setVisibility(View.VISIBLE);
+        switchLayoutTo(MAIN_LAYOUT);
 
-        findViewById(R.id.input).setVisibility(View.GONE);
-        findViewById(R.id.game).setVisibility(View.GONE);
-        findViewById(R.id.doneButton).setVisibility(View.GONE);
 
         Games.TurnBasedMultiplayer.takeTurn(mGoogleApiClient, mMatch.getMatchId(),
                 mTurnData.persist(), nextParticipantId).setResultCallback(
@@ -496,8 +484,20 @@ public class FullscreenActivity extends AppCompatActivity
                 });
 
         mTurnData = null;
+        temporaryGame = new TemporaryGame();
     }
-
+    public void switchLayoutTo(int num){
+        switch (num){
+            case MAIN_LAYOUT:
+               findViewById(R.id.waitroom_layout).setVisibility(View.VISIBLE);
+                findViewById(R.id.gameplay_layout).setVisibility(View.GONE);
+                break;
+            case GAMEPLAY_LAYOUT:
+                findViewById(R.id.waitroom_layout).setVisibility(View.GONE);
+                findViewById(R.id.gameplay_layout).setVisibility(View.VISIBLE);
+                break;
+        }
+    }
     // Sign-in, Sign out behavior
 
     // Update the visibility based on what state we're in.
@@ -535,15 +535,11 @@ public class FullscreenActivity extends AppCompatActivity
         isDoingTurn = true;
         //setViewVisibility();
         mContentView.setBackgroundColor(Color.WHITE);
-        findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-        findViewById(R.id.sign_out_button).setVisibility(View.GONE);
-        findViewById(R.id.startMatchButton).setVisibility(View.GONE);
-        findViewById(R.id.checkGamesButton).setVisibility(View.GONE);
-        findViewById(R.id.game).setVisibility(View.VISIBLE);
-        findViewById(R.id.input).setVisibility(View.VISIBLE);
-        findViewById(R.id.doneButton).setVisibility(View.VISIBLE);
 
+        switchLayoutTo(GAMEPLAY_LAYOUT);
         mDataView.setText(mTurnData.data);
+        temporaryGame.setData(mTurnData.data);
+        temporaryGame.setClickListeners(findViewById(R.id.gameplay_layout));
     }
 
     /*\public void convertToColor(int id, int color){
@@ -724,17 +720,20 @@ public class FullscreenActivity extends AppCompatActivity
     // callback to OnTurnBasedMatchUpdated(), which will show the game
     // UI.
 
-    /*\public void startMatch(TurnBasedMatch match) {
-        mTurnData = new SkeletonTurn();
-        // Some basic turn data
-        mTurnData.data = "000000000";
-        boardState = mTurnData.data;
+    public void startMatch(TurnBasedMatch match) {
+
+
         mMatch = match;
 
         String playerId = Games.Players.getCurrentPlayerId(mGoogleApiClient);
         String myParticipantId = mMatch.getParticipantId(playerId);
 
-        showSpinner();
+        //String nextPlayerName = mMatch.getParticipant(getNextParticipantId()).getDisplayName();
+        //String currentPlayerName = mMatch.getParticipant(playerId).getDisplayName();
+
+        mTurnData = new Game();
+        switchLayoutTo(GAMEPLAY_LAYOUT);
+
 
         Games.TurnBasedMultiplayer.takeTurn(mGoogleApiClient, match.getMatchId(),
                 mTurnData.persist(), myParticipantId).setResultCallback(
@@ -744,7 +743,7 @@ public class FullscreenActivity extends AppCompatActivity
                         processResult(result);
                     }
                 });
-    }\*/
+    }
 
     // If you choose to rematch, then call it and wait for a response.
     public void rematch() {
@@ -769,7 +768,6 @@ public class FullscreenActivity extends AppCompatActivity
      * @return participantId of next player, or null if automatching
      */
     public String getNextParticipantId() {
-
         String playerId = Games.Players.getCurrentPlayerId(mGoogleApiClient);
         String myParticipantId = mMatch.getParticipantId(playerId);
 
@@ -844,7 +842,7 @@ public class FullscreenActivity extends AppCompatActivity
                         "Still waiting for invitations.\n\nBe patient!");
         }
 
-        //\\mTurnData = null;
+        mTurnData = null;
 
         setViewVisibility();
     }
@@ -876,7 +874,7 @@ public class FullscreenActivity extends AppCompatActivity
             return;
         }
 
-        //\\startMatch(match);
+        startMatch(match);
     }
 
 
@@ -1010,6 +1008,7 @@ public class FullscreenActivity extends AppCompatActivity
                 mTurnBasedMatch = null;
                 findViewById(R.id.sign_in_button).setVisibility(View.GONE);
                 mGoogleApiClient.connect();
+                delayedHide(2000);
                 break;
             case R.id.sign_out_button:
                 mSignInClicked = false;

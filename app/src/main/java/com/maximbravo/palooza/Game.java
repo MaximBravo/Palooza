@@ -22,6 +22,9 @@ public class Game {
     public Game() {
     }
 
+    public Game(String currentPlayerID, String nextPlayerId){
+
+    }
 
     public void setGameplayUI(){
 
