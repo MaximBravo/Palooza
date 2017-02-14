@@ -32,6 +32,17 @@ public class Cell {
     public void setHasWarrior(boolean t){
         hasWarrior = t;
     }
+    public void setWeapons(String w){
+        String[] weapo = w.split(",");
+        Weapon[] weaponsToBe = new Weapon[6];
+        Pieces p = new Pieces();
+        for(int i = 0; i < weapo.length; i++){
+            String wp = weapo[i];
+            weaponsToBe[i] = p.getWeaponWithName(wp);
+        }
+        weapons = weaponsToBe;
+        shelfWeapons = generateShelfWeapons();
+    }
     public void setWarrior(Warrior war){
         warrior = war;
     }

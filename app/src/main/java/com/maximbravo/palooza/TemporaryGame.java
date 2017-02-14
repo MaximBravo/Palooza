@@ -13,6 +13,7 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -67,6 +68,7 @@ public class TemporaryGame implements View.OnClickListener {
             } else {
                 randomlySelectPlaces();
             }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -85,6 +87,13 @@ public class TemporaryGame implements View.OnClickListener {
         Cell predator = new Cell(4, pieces.getPredator(), pieces.getStandardWeaponPack());
         Cell reptile = new Cell(5, pieces.getReptile(), pieces.getStandardWeaponPack());
         Cell rodent = new Cell(6, pieces.getRodent(), pieces.getStandardWeaponPack());
+
+        Cell heavyDuty1 = new Cell(31, pieces.getHeavy(), pieces.getStandardWeaponPack());
+        Cell smallBird1 = new Cell(32, pieces.getSmallBird(), pieces.getStandardWeaponPack());
+        Cell bigBird1 = new Cell(33, pieces.getBigBird(), pieces.getStandardWeaponPack());
+        Cell predator1 = new Cell(34, pieces.getPredator(), pieces.getStandardWeaponPack());
+        Cell reptile1 = new Cell(35, pieces.getReptile(), pieces.getStandardWeaponPack());
+        Cell rodent1 = new Cell(36, pieces.getRodent(), pieces.getStandardWeaponPack());
         board.setCellAt(1, heavyDuty);
         board.setCellAt(2, smallBird);
         board.setCellAt(3, bigBird);
@@ -92,12 +101,12 @@ public class TemporaryGame implements View.OnClickListener {
         board.setCellAt(5, reptile);
         board.setCellAt(6, rodent);
 
-        board.setCellAt(31, heavyDuty);
-        board.setCellAt(32, smallBird);
-        board.setCellAt(33, bigBird);
-        board.setCellAt(34, predator);
+        board.setCellAt(31, heavyDuty1);
+        board.setCellAt(32, smallBird1);
+        board.setCellAt(33, bigBird1);
+        board.setCellAt(34, predator1);
         board.setCellAt(35, reptile);
-        board.setCellAt(36, rodent);
+        board.setCellAt(36, rodent1);
         displayWarriors();
     }
 
@@ -157,6 +166,24 @@ public class TemporaryGame implements View.OnClickListener {
     }
 
     public void dealWith(int id) {
+        Cell cell = board.getCellNumber(id);
+        if(cell.hasWarrior()){
+            Warrior warrior = cell.getWarrior();
+            TextView selectedPiece = (TextView) pView.findViewById(R.id.selected_piece);
+            TextView shelf1 = (TextView) pView.findViewById(R.id.shelf_1);
+            TextView shelf2 = (TextView) pView.findViewById(R.id.shelf_2);
+            TextView shelf3 = (TextView) pView.findViewById(R.id.shelf_3);
+            TextView shelf4 = (TextView) pView.findViewById(R.id.shelf_4);
+
+            selectedPiece.setBackgroundResource(warrior.getPictureFilePath());
+            Weapon[] weapons = cell.getShelfWeapons();
+            shelf1.setBackgroundResource(weapons[0].getResId());
+            shelf2.setBackgroundResource(weapons[1].getResId());
+            shelf3.setBackgroundResource(weapons[2].getResId());
+            shelf4.setBackgroundResource(weapons[3].getResId());
+
+
+        }
         if (selected.size() >= 2) {
             if (selected.size() == 2) {
                 selected.add(2, id);

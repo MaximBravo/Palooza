@@ -39,11 +39,11 @@ public class Pieces {
         rodents = new ArrayList<>();
         reptiles = new ArrayList<>();
         allWarriors = new ArrayList<>();
-        bazooka = new Weapon("bazooka", 50, 0, 5, 1, 3);
-        shotgun = new Weapon("shotgun", 25, 0, 3, 2, 2);
-        shield = new Weapon( "shield",   0, 0, 0, 1, 0);
-        sword = new Weapon(  "sword",   75, 0, 5, 1, 1);
-        grenade = new Weapon("grenade", 25, 10,5, 1, 4);
+        bazooka = new Weapon("bazooka", 50, 0, 5, 1, 3, R.drawable.bazooka);
+        shotgun = new Weapon("shotgun", 25, 0, 3, 2, 2, R.drawable.shotgun);
+        shield = new Weapon( "shield",   0, 0, 0, 1, 0, R.drawable.shield);
+        sword = new Weapon(  "sword",   75, 0, 5, 1, 1, R.drawable.sword);
+        grenade = new Weapon("grenade", 25, 10,5, 1, 4, R.drawable.grenade);
         standardWeaponPack = new Weapon[]{bazooka, shotgun, shield, sword, grenade};
 
 
@@ -69,6 +69,14 @@ public class Pieces {
         allWarriors.add(snake);
     }
 
+    public Weapon getWeaponWithName(String name){
+        for(int i = 0; i < standardWeaponPack.length; i++){
+            if(standardWeaponPack[i].getName().equals(name)){
+                return standardWeaponPack[i];
+            }
+        }
+        return bazooka;
+    }
     public Weapon[] getStandardWeaponPack(){
         return standardWeaponPack;
     }

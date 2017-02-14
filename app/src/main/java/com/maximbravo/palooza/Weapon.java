@@ -11,15 +11,15 @@ public class Weapon {
     private int variablility;
     private int ammo;
     private int range;
-    //private String soundFilePath;
-    public Weapon(String n, int d, int sd, int v, int a, int r){//, String s){
+    private int picture;
+    public Weapon(String n, int d, int sd, int v, int a, int r, int resId){//, String s){
         name = n;
         damage = d;
         splashDamage = sd;
         variablility = v;
         ammo = a;
         range = r;
-        //soundFilePath = s;
+        picture = resId;
     }
     public String getName() {
         return name;
@@ -29,6 +29,9 @@ public class Weapon {
     }
     public int getVariablility(){
         return variablility;
+    }
+    public int getResId(){
+        return picture;
     }
     public int getSplashDamage() {
         return splashDamage;

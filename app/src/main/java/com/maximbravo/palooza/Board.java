@@ -51,6 +51,9 @@ public class Board {
                         if(cell.has("warriorHealth")) {
                             newCell.setWarriorHealth(cell.getInt("warriorHealth"));
                         }
+                        if(cell.has("weapons")){
+                            newCell.setWeapons(cell.getString("weapons"));
+                        }
 //                    cell.put("weapons", currentCell.getWeapons());
 //                    cell.put("shelfWeapons", currentCell.getShelfWeapons());
                     }
@@ -75,7 +78,7 @@ public class Board {
                     Warrior warrior = currentCell.getWarrior();
                     cell.put("warriorName", warrior.getName());
                     cell.put("warriorHealth", warrior.getHealth());
-//                    cell.put("weapons", currentCell.getWeapons());
+                    cell.put("weapons", currentCell.getWeapons());
 //                    cell.put("shelfWeapons", currentCell.getShelfWeapons());
                 }
                 result.put(cell);
