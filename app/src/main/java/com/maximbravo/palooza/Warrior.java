@@ -8,64 +8,34 @@ import java.util.Random;
  */
 
 public class Warrior {
-    private static final int SHELF_SIZE = 4;
     private String name;
     private int health;
+    private boolean isEmpty;
     private int movability;
-    private Weapon[] weapons;
-    ArrayList<Weapon> pool;
-    private Weapon[] shelfWeapons;
-    private String pictureFilePath;
-    private String soundFilePath;
-    public Warrior(String n, int h, int m, Weapon[] w, String p, String s){
+    private int pictureFilePath;
+    //private String soundFilePath;
+    public Warrior(String n, int h, int m, int resId){//}, String s){
+        isEmpty = false;
         name = n;
         health = h;
         movability = m;
-        weapons = w;
-        pictureFilePath = p;
-        soundFilePath = s;
-        shelfWeapons = generateShelfWeapons();
-    }
-    public void updateShelfWeaponsWithout(int index){
-        shelfWeapons[index] = pool.get(0);
-        pool.remove(0);
+
+        pictureFilePath = resId;
+        //soundFilePath = s;
+
     }
 
-    public Weapon[] generateShelfWeapons(){
-        Weapon[] result = new Weapon[SHELF_SIZE];
-        pool = randomized(toArrayList(weapons));
-        for(int i = 0; i < SHELF_SIZE; i++){
-            Weapon currentWeapon = pool.get(0);
-            result[i] = currentWeapon;
-            pool.remove(0);
-        }
-        return result;
+    public Warrior(){
+        isEmpty = true;
     }
 
-    public ArrayList<Weapon> randomized(ArrayList<Weapon> w){
-        ArrayList<Weapon> randomized = new ArrayList<>();
-        ArrayList<Integer> randomIndexes = new ArrayList<>();
-        while(randomIndexes.size() != w.size()){
-            Random rand = new Random();
-            int randomNum = rand.nextInt(w.size());
-            if(!randomIndexes.contains(randomNum)){
-                randomized.add(w.get(randomNum));
-                randomIndexes.add(randomNum);
-            }
-        }
-        return randomized;
-    }
-    public ArrayList<Weapon> toArrayList(Weapon[] w){
-        ArrayList<Weapon> result = new ArrayList<>();
-        for(int i = 0; i < w.length; i++){
-            result.add(w[i]);
-        }
-        return result;
-    }
     public String getName() {
         return name;
     }
 
+    public void setHealth(int h){
+        health = h;
+    }
     public int getHealth() {
         return health;
     }
@@ -74,19 +44,11 @@ public class Warrior {
         return movability;
     }
 
-    public Weapon[] getWeapons() {
-        return weapons;
-    }
-
-    public Weapon[] getShelfWeapons() {
-        return shelfWeapons;
-    }
-
-    public String getPictureFilePath() {
+    public int getPictureFilePath() {
         return pictureFilePath;
     }
 
-    public String getSoundFilePath() {
-        return soundFilePath;
-    }
+//    public String getSoundFilePath() {
+//        return soundFilePath;
+//    }
 }

@@ -33,6 +33,9 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
@@ -170,7 +173,7 @@ public class FullscreenActivity extends AppCompatActivity
         mDataView = (TextView) findViewById(R.id.game);
         mContentView = findViewById(R.id.content);
         mVisible = true;
-        temporaryGame = new TemporaryGame();
+        temporaryGame = new TemporaryGame(findViewById(R.id.gameplay_layout));
 
     }
     private void hide() {
@@ -484,7 +487,7 @@ public class FullscreenActivity extends AppCompatActivity
                 });
 
         mTurnData = null;
-        temporaryGame = new TemporaryGame();
+        temporaryGame = new TemporaryGame(findViewById(R.id.gameplay_layout));
     }
     public void switchLayoutTo(int num){
         switch (num){
@@ -539,7 +542,7 @@ public class FullscreenActivity extends AppCompatActivity
         switchLayoutTo(GAMEPLAY_LAYOUT);
         mDataView.setText(mTurnData.data);
         temporaryGame.setData(mTurnData.data);
-        temporaryGame.setClickListeners(findViewById(R.id.gameplay_layout));
+        temporaryGame.setClickListeners();
     }
 
     /*\public void convertToColor(int id, int color){
@@ -728,10 +731,19 @@ public class FullscreenActivity extends AppCompatActivity
         String playerId = Games.Players.getCurrentPlayerId(mGoogleApiClient);
         String myParticipantId = mMatch.getParticipantId(playerId);
 
-        //String nextPlayerName = mMatch.getParticipant(getNextParticipantId()).getDisplayName();
-        //String currentPlayerName = mMatch.getParticipant(playerId).getDisplayName();
+        String nextPlayerName = mMatch.getParticipant(getNextParticipantId()).getDisplayName();
+        String currentPlayerName = mMatch.getParticipant(getCurrentParticipant()).getDisplayName();
 
         mTurnData = new Game();
+        JSONObject dat = new JSONObject();
+
+        try {
+            dat.put("currentPlayer", currentPlayerName);
+            dat.put("nextPlayer", nextPlayerName);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mTurnData.data = dat.toString();
         switchLayoutTo(GAMEPLAY_LAYOUT);
 
 
@@ -795,6 +807,33 @@ public class FullscreenActivity extends AppCompatActivity
         }
     }
 
+    public String getCurrentParticipant() {
+        String playerId = Games.Players.getCurrentPlayerId(mGoogleApiClient);
+        String myParticipantId = mMatch.getParticipantId(playerId);
+
+        ArrayList<String> participantIds = mMatch.getParticipantIds();
+
+        int desiredIndex = -1;
+
+        for (int i = 0; i < participantIds.size(); i++) {
+            if (participantIds.get(i).equals(myParticipantId)) {
+                desiredIndex = i;
+            }
+        }
+
+        if (desiredIndex < participantIds.size()) {
+            return participantIds.get(desiredIndex);
+        }
+
+        if (mMatch.getAvailableAutoMatchSlots() <= 0) {
+            // You've run out of automatch slots, so we start over.
+            return participantIds.get(0);
+        } else {
+            // You have not yet fully automatched, so null will find a new
+            // person to play against.
+            return null;
+        }
+    }
     // This is the main function that gets called when players choose a match
     // from the inbox, or else create a match and want to start it.
     public void updateMatch(TurnBasedMatch match) {
